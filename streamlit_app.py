@@ -1,6 +1,6 @@
 import streamlit as st
 import ultralytics
-
+import concurrent.futures
 from ultralytics import YOLO, checks, hub
 checks()  # checks
 
@@ -168,7 +168,7 @@ folder_url = "https://drive.google.com/drive/folders/11nDOFw5igiVzOYhCoUCLE8injw
 local_models_dir = "models"
 
 if not os.path.exists(local_models_dir) or len(os.listdir(local_models_dir)) == 0:
-    progress_message.write("Downloading models from Google Drive...")
+    progress_message.write("Downloading 6 models (1.1 GB) from Google Drive, this will take 1-2 minutes")
     gdown.download_folder(url=folder_url, output=local_models_dir, quiet=False)
 else:
     progress_message.write("Model zip downloaded.")
@@ -217,6 +217,67 @@ selected_image_name = st.selectbox(
 )
 
 progress_message.write(" ")
+
+# ########################################
+# # PREDICT WITH ALL MODELS
+# ########################################
+
+# def predict_model(model, image_path, conf=0.5):
+#     """
+#     Helper function to run prediction on a single model.
+#     Returns the plotted image from the prediction result.
+#     """
+#     results = model.predict(image_path, visualize=False, conf=conf)
+#     return results[0].plot()
+
+# ########################################
+# # PREDICT WITH ALL MODELS (Using ProcessPoolExecutor)
+# ########################################
+# predict_button_placeholder = st.empty()
+# if predict_button_placeholder.button("Predict (this will take a minute)"):
+#     # Clear the images container (subheader and images) and the predict button
+#     images_container.empty()
+#     predict_button_placeholder.empty()
+
+#     # Single-line progress text for predictions
+#     progress_prediction = st.empty()
+
+#     # Build the full path to the selected image
+#     image_path = os.path.join(local_images_dir, selected_image_name)
+#     if not os.path.exists(image_path):
+#         st.error(f"Image not found at path: {image_path}")
+#         st.stop()
+
+#     # Build a list of model keys in the EXACT order of model_dict, skipping any that aren't loaded
+#     ordered_model_keys = [k for k in model_dict if k in models]
+#     total_models = len(ordered_model_keys)
+#     prediction_images = []
+
+#     # Offload each model prediction to a separate process
+#     with concurrent.futures.ProcessPoolExecutor() as executor:
+#         future_to_key = {
+#             executor.submit(predict_model, models[key], image_path, 0.5): key
+#             for key in ordered_model_keys
+#         }
+#         for i, future in enumerate(concurrent.futures.as_completed(future_to_key), start=1):
+#             model_key = future_to_key[future]
+#             progress_prediction.write(f"Running model {i} of {total_models}: {model_key} ...")
+#             try:
+#                 plotted_image = future.result()
+#                 prediction_images.append(plotted_image)
+#             except Exception as exc:
+#                 progress_prediction.write(f"Model {model_key} generated an exception: {exc}")
+
+#     # After all models are done
+#     progress_prediction.write("All model predictions are complete, generating output")
+
+#     # Display the predictions side by side using the two-line title
+#     display_predictions(prediction_images, ordered_model_keys, model_dict)
+#     progress_prediction.write("All model predictions are complete, output displayed")
+
+#     # Button to predict using another image, which clears the screen and reruns the app
+#     if st.button("Predict using another image"):
+#         st.experimental_rerun()
 
 ########################################
 # PREDICT WITH ALL MODELS
