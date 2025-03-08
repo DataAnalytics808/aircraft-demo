@@ -78,10 +78,10 @@ atexit.register(lambda: flask_process.kill())
 
 
 # Wait a few seconds to allow Flask to start up
-time.sleep(5)
+time.sleep(10)
 
 # Poll the Flask service health-check endpoint
-max_retries = 10
+max_retries = 20
 service_running = False
 health_url = "http://localhost:5000/health"
 
@@ -99,7 +99,7 @@ if service_running:
     progress_message.write("Flask service is running!")
 else:
     progress_message.write("Flask service did not start. Please check the logs.")
-    st.stop()
+    # st.stop()
 
 time.sleep(1)
 
