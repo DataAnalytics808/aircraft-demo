@@ -1,3 +1,16 @@
+import subprocess
+import time
+import atexit
+
+# Start the Flask service in the background
+flask_process = subprocess.Popen(["python", "flask_service.py"])
+
+# Ensure the Flask service is terminated when the Streamlit app stops
+atexit.register(lambda: flask_process.kill())
+
+# Wait a few seconds to allow Flask to start up
+time.sleep(5)
+
 import streamlit as st
 import requests
 from PIL import Image
