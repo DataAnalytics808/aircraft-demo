@@ -20,19 +20,19 @@ else:
     print("Models already downloaded.")
 
 # Load all models once at startup.
-models = {
-    "CORS-ADD": YOLO(os.path.join(local_models_dir, "CORS-ADD.pt")),
-    "fakeplanes": YOLO(os.path.join(local_models_dir, "fakeplanes.pt")),
-    "fakeplanes_3_class": YOLO(os.path.join(local_models_dir, "fakeplanes_3_class.pt"))
-}
 # models = {
-#     "YOLO_baseline_COCO": YOLO(os.path.join(local_models_dir, "YOLO_baseline_COCO.pt")),
 #     "CORS-ADD": YOLO(os.path.join(local_models_dir, "CORS-ADD.pt")),
-#     "HR-Planes": YOLO(os.path.join(local_models_dir, "HR-Planes.pt")),
-#     "MAR20": YOLO(os.path.join(local_models_dir, "MAR20.pt")),
 #     "fakeplanes": YOLO(os.path.join(local_models_dir, "fakeplanes.pt")),
 #     "fakeplanes_3_class": YOLO(os.path.join(local_models_dir, "fakeplanes_3_class.pt"))
 # }
+models = {
+    "YOLO_baseline_COCO": YOLO(os.path.join(local_models_dir, "YOLO_baseline_COCO.pt")),
+    "CORS-ADD": YOLO(os.path.join(local_models_dir, "CORS-ADD.pt")),
+    "HR-Planes": YOLO(os.path.join(local_models_dir, "HR-Planes.pt")),
+    "MAR20": YOLO(os.path.join(local_models_dir, "MAR20.pt")),
+    "fakeplanes": YOLO(os.path.join(local_models_dir, "fakeplanes.pt")),
+    "fakeplanes_3_class": YOLO(os.path.join(local_models_dir, "fakeplanes_3_class.pt"))
+}
 
 @app.route("/predict/<model_name>", methods=["POST"])
 def predict(model_name):
