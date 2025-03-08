@@ -67,6 +67,11 @@ st.markdown(' ',    unsafe_allow_html=True)
 # SINGLE-LINE PROGRESS MESSAGE
 ########################################
 progress_message = st.empty()
+
+
+########################################
+# STARTING FLASK - TAKES A LONG TIME
+########################################
 progress_message.write("Starting Flask service")
 
 # --- Helper: Check if a port is in use ---
@@ -81,36 +86,40 @@ FLASK_PORT = 5000
 health_url = f"http://localhost:{FLASK_PORT}/health"
 
 
-# --- Launch the Flask service only if it isn't already running ---
-if not is_port_in_use(FLASK_PORT):
-    progress_message.write("Starting Flask service")
-    flask_process = subprocess.Popen(
-        [sys.executable, "flask_service.py"],
-        env=os.environ.copy()
-    )
-    # Ensure that the Flask process is terminated when the Streamlit app stops
-    atexit.register(lambda: flask_process.kill())
-else:
-    progress_message.write("Flask service is already running on port 5000.")
+# Run the Flask service launch and health-check only once per session.
+if "flask_started" not in st.session_state:
+    # Launch Flask service if not already running.
+    if not is_port_in_use(FLASK_PORT):
+        progress_message.write("Starting Flask service")
+        flask_process = subprocess.Popen(
+            [sys.executable, "flask_service.py"],
+            env=os.environ.copy()
+        )
+        # Ensure that the Flask process is terminated when the Streamlit app stops.
+        atexit.register(lambda: flask_process.kill())
+    else:
+        progress_message.write("Flask service is already running on port 5000.")
 
-# --- Poll the health-check endpoint with periodic updates ---
-max_retries = 30  # maximum retries (30 x 2 sec = 60 sec max wait)
-retry_counter = 0
-while retry_counter < max_retries:
-    try:
-        response = requests.get(health_url, timeout=2)
-        if response.status_code == 200:
-            break
-    except Exception:
-        pass
-    retry_counter += 1
-    # Update the status message by adding an extra period each loop
-    progress_message.write("Starting Flask service" + "." * retry_counter)
-    time.sleep(2)
+    # Poll the health-check endpoint with periodic status updates.
+    max_retries = 30  # up to 60 seconds (30 x 2 sec)
+    retry_counter = 0
+    while retry_counter < max_retries:
+        try:
+            response = requests.get(health_url, timeout=2)
+            if response.status_code == 200:
+                break
+        except Exception:
+            pass
+        retry_counter += 1
+        progress_message.write("Starting Flask service" + "." * retry_counter)
+        time.sleep(2)
 
-if retry_counter == max_retries:
-    st.error("Flask service failed to start.")
-    st.stop()
+    if retry_counter == max_retries:
+        st.error("Flask service failed to start.")
+        st.stop()
+    else:
+        progress_message.write("Flask service is up and running!")
+        st.session_state["flask_started"] = True
 else:
     progress_message.write("Flask service is running")
 
