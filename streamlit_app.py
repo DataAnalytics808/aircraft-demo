@@ -10,24 +10,9 @@ import subprocess
 import time
 import atexit
 
-########################################
-# SINGLE-LINE PROGRESS MESSAGE
-########################################
+
 # # 1) Set the page layout to "wide" for larger images
 st.set_page_config(layout="wide")
-progress_message = st.empty()
-progress_message.write("Starting Flask service")
-
-# Start the Flask service in the background
-flask_process = subprocess.Popen(["python", "flask_service.py"])
-
-# Ensure the Flask service is terminated when the Streamlit app stops
-atexit.register(lambda: flask_process.kill())
-
-# Wait a few seconds to allow Flask to start up
-time.sleep(5)
-
-progress_message.write("Flask service started")
 
 
 # Define a dictionary with model keys and descriptive text.
@@ -74,6 +59,49 @@ st.markdown('<p class="custom-paragraph">[3] <em>Yu W, Cheng G, Wang M, Yao Y, X
 st.markdown('<p class="custom-paragraph">[4] <em>Shi T, Gong J, Jiang S, Zhi X, Bao G, Sun Y, et al. Complex Optical Remote-Sensing Aircraft Detection Dataset and Benchmark. IEEE Transactions on Geoscience and Remote Sensing. 2023; 61.</em></p>',
     unsafe_allow_html=True)
 st.markdown(' ',    unsafe_allow_html=True)
+
+
+########################################
+# SINGLE-LINE PROGRESS MESSAGE
+########################################
+progress_message = st.empty()
+progress_message.write("Starting Flask service")
+
+
+# Start the Flask service using the same interpreter and environment
+flask_process = subprocess.Popen([sys.executable, "flask_service.py"], env=os.environ.copy())
+
+# Ensure the Flask process is killed when the Streamlit app stops
+atexit.register(lambda: flask_process.kill())
+
+
+
+# Wait a few seconds to allow Flask to start up
+time.sleep(5)
+
+# Poll the Flask service health-check endpoint
+max_retries = 10
+service_running = False
+health_url = "http://localhost:5000/health"
+
+
+for attempt in range(max_retries):
+    try:
+        response = requests.get(health_url, timeout=2)
+        if response.status_code == 200:
+            service_running = True
+            break
+    except Exception:
+        time.sleep(1)
+
+if service_running:
+    st.info("Flask service is running!")
+else:
+    st.error("Flask service did not start. Please check the logs.")
+    st.stop()
+
+time.sleep(1)
+
 
 
 # Ensure gdown is installed; if not, install it.

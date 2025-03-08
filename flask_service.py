@@ -61,6 +61,12 @@ def predict(model_name):
     img_io.seek(0)
     return send_file(img_io, mimetype="image/png")
 
+# Health-check endpoint
+@app.route("/health", methods=["GET"])
+def health():
+    return "OK", 200
+
 if __name__ == "__main__":
     # Listen on all interfaces (required for Codespaces) on port 5000.
     app.run(host="0.0.0.0", port=5000)
+

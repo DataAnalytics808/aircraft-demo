@@ -4,3 +4,4 @@ ultralytics
 pillow
 matplotlib
 gdown
+torch
