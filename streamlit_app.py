@@ -86,22 +86,23 @@ FLASK_PORT = 5000
 health_url = f"http://localhost:{FLASK_PORT}/health"
 
 
-# Run the Flask service launch and health-check only once per session.
+# --- Launch Flask service and perform one-time health-check ---
 if "flask_started" not in st.session_state:
-    # Launch Flask service if not already running.
     if not is_port_in_use(FLASK_PORT):
         progress_message.write("Starting Flask service")
         flask_process = subprocess.Popen(
             [sys.executable, "flask_service.py"],
             env=os.environ.copy()
         )
-        # Ensure that the Flask process is terminated when the Streamlit app stops.
+        # Store the process handle so we don't relaunch later.
+        st.session_state["flask_process"] = flask_process
+        # Ensure that the Flask process is terminated when Streamlit stops.
         atexit.register(lambda: flask_process.kill())
     else:
         progress_message.write("Flask service is already running on port 5000.")
 
-    # Poll the health-check endpoint with periodic status updates.
-    max_retries = 30  # up to 60 seconds (30 x 2 sec)
+    # Poll the health-check endpoint until the service responds.
+    max_retries = 30  # up to 60 seconds
     retry_counter = 0
     while retry_counter < max_retries:
         try:
@@ -122,8 +123,6 @@ if "flask_started" not in st.session_state:
         st.session_state["flask_started"] = True
 else:
     progress_message.write("Flask service is running")
-
-
 
 
 
