@@ -9,6 +9,7 @@ import gdown
 import subprocess
 import time
 import atexit
+import sys
 
 
 # # 1) Set the page layout to "wide" for larger images
@@ -95,9 +96,9 @@ for attempt in range(max_retries):
         time.sleep(1)
 
 if service_running:
-    st.info("Flask service is running!")
+    progress_message.write("Flask service is running!")
 else:
-    st.error("Flask service did not start. Please check the logs.")
+    progress_message.write("Flask service did not start. Please check the logs.")
     st.stop()
 
 time.sleep(1)
