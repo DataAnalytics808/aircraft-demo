@@ -1,6 +1,22 @@
+import streamlit as st
+import requests
+from PIL import Image
+import io
+import os
+import textwrap
+import gdown
+
 import subprocess
 import time
 import atexit
+
+########################################
+# SINGLE-LINE PROGRESS MESSAGE
+########################################
+# # 1) Set the page layout to "wide" for larger images
+st.set_page_config(layout="wide")
+progress_message = st.empty()
+progress_message.write("Starting Flask service")
 
 # Start the Flask service in the background
 flask_process = subprocess.Popen(["python", "flask_service.py"])
@@ -11,31 +27,64 @@ atexit.register(lambda: flask_process.kill())
 # Wait a few seconds to allow Flask to start up
 time.sleep(5)
 
-import streamlit as st
-import requests
-from PIL import Image
-import io
-import os
-import textwrap
-import gdown
+progress_message.write("Flask service started")
 
-# Set the page layout to wide.
-st.set_page_config(layout="wide")
 
 # Define a dictionary with model keys and descriptive text.
-# model_dict = {
-#     'CORS-ADD':           'Prediction from CORS-ADD model [2]', 
-#     'fakeplanes':         'Prediction from our model, single class (Everman) [1]', 
-#     'fakeplanes_3_class': 'Prediction from our model, bomber/fighter/cargo classes (Wagner) [1]'
-# }
 model_dict = {
-    'YOLO_baseline_COCO': 'Prediction from Baseline YOLO model without fine-tuning', 
     'CORS-ADD':           'Prediction from CORS-ADD model [2]', 
-    'HR-Planes':          'Prediction from HR-Planes model [3]', 
-    'MAR20':              'Prediction from MAR20 model [4]', 
     'fakeplanes':         'Prediction from our model, single class (Everman) [1]', 
     'fakeplanes_3_class': 'Prediction from our model, bomber/fighter/cargo classes (Wagner) [1]'
 }
+# model_dict = {
+#     'YOLO_baseline_COCO': 'Prediction from Baseline YOLO model without fine-tuning', 
+#     'CORS-ADD':           'Prediction from CORS-ADD model [2]', 
+#     'HR-Planes':          'Prediction from HR-Planes model [3]', 
+#     'MAR20':              'Prediction from MAR20 model [4]', 
+#     'fakeplanes':         'Prediction from our model, single class (Everman) [1]', 
+#     'fakeplanes_3_class': 'Prediction from our model, bomber/fighter/cargo classes (Wagner) [1]'
+# }
+
+########################################
+# STREAMLIT UI preamble
+########################################
+st.title("Aircraft Detection using Satellite Imagery")
+
+st.markdown(
+    """
+    <style>
+    .custom-paragraph {
+        margin: 0px;
+        padding: 0px;
+        line-height: 1.0;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True
+)
+
+st.text("This demonstration implements the models developed in [1], using datasets from [1-4]:")
+
+st.markdown('<p class="custom-paragraph">[1] <em>R. Everman, T. Wagner, N. Ranly, B. Cox, “Aircraft Detection from Satellite Imagery Using Synthetic Data,” Journal of Defense Modeling & Simulation (2025)</em></p>',
+    unsafe_allow_html=True)
+st.markdown('<p class="custom-paragraph">[2] <em>Unsal D. HRPlanesv2 Data Set - High Resolution Satellite Imagery for Aircraft Detection. [Online at github.com]; 2022.</em></p>',
+    unsafe_allow_html=True)
+st.markdown('<p class="custom-paragraph">[3] <em>Yu W, Cheng G, Wang M, Yao Y, Xie X, Yao X, et al. MAR20: A Benchmark for Military Aircraft Recognition in Remote Sensing Images. National Remote Sensing Bulletin. 2023; 27(12): 2688-2696.</em></p>',
+    unsafe_allow_html=True)
+st.markdown('<p class="custom-paragraph">[4] <em>Shi T, Gong J, Jiang S, Zhi X, Bao G, Sun Y, et al. Complex Optical Remote-Sensing Aircraft Detection Dataset and Benchmark. IEEE Transactions on Geoscience and Remote Sensing. 2023; 61.</em></p>',
+    unsafe_allow_html=True)
+st.markdown(' ',    unsafe_allow_html=True)
+
+
+# Ensure gdown is installed; if not, install it.
+try:
+    import gdown
+except ImportError:
+    import subprocess, sys
+    subprocess.check_call([sys.executable, "-m", "pip", "install", "gdown"])
+    import gdown
+
+
 
 ########################################
 # Helper Functions
@@ -96,7 +145,7 @@ def get_prediction_from_flask(model_name, image_path):
 
 local_models_dir = "models"
 local_images_dir = "images"
-progress_message = st.empty()
+# progress_message = st.empty()
 
 # Download models from Google Drive if the folder is missing or empty.
 folder_url = "https://drive.google.com/drive/folders/11nDOFw5igiVzOYhCoUCLE8injwa3TCod?usp=drive_link"
