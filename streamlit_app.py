@@ -91,7 +91,7 @@ if "flask_started" not in st.session_state:
     if not is_port_in_use(FLASK_PORT):
         progress_message.write("Starting Flask service")
         flask_process = subprocess.Popen(
-            ["gunicorn", "--workers", "1", "--bind", f"0.0.0.0:{FLASK_PORT}", "flask_service:app"],
+            ["gunicorn", "--preload", "--workers", "1", "--bind", f"0.0.0.0:{FLASK_PORT}", "flask_service:app"],
             env=os.environ.copy()
 )
         # Store the process handle so we don't relaunch later.
