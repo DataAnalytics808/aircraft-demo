@@ -20,11 +20,6 @@ else:
     print("Models already downloaded.")
 
 # Load all models once at startup.
-# models = {
-#     "CORS-ADD": YOLO(os.path.join(local_models_dir, "CORS-ADD.pt")),
-#     "fakeplanes": YOLO(os.path.join(local_models_dir, "fakeplanes.pt")),
-#     "fakeplanes_3_class": YOLO(os.path.join(local_models_dir, "fakeplanes_3_class.pt"))
-# }
 models = {
     "YOLO_baseline_COCO": YOLO(os.path.join(local_models_dir, "YOLO_baseline_COCO.pt")),
     "CORS-ADD": YOLO(os.path.join(local_models_dir, "CORS-ADD.pt")),
@@ -66,7 +61,6 @@ def predict(model_name):
 def health():
     return "OK", 200
 
-if __name__ == "__main__":
-    # Listen on all interfaces (required for Codespaces) on port 5000.
-    app.run(host="0.0.0.0", port=5000, threaded=True)
-
+# Note:
+# This file is intentionally designed to expose only the WSGI application (the 'app' object)
+# for production servers such as Gunicorn. Do not include a __main__ entry point here.

@@ -72,7 +72,7 @@ progress_message = st.empty()
 ########################################
 # STARTING FLASK - TAKES A LONG TIME
 ########################################
-progress_message.write("Starting Flask service")
+progress_message.write("Starting Flask service (this will take 1-2 minutes)")
 
 # --- Helper: Check if a port is in use ---
 def is_port_in_use(port):
@@ -91,9 +91,9 @@ if "flask_started" not in st.session_state:
     if not is_port_in_use(FLASK_PORT):
         progress_message.write("Starting Flask service")
         flask_process = subprocess.Popen(
-            [sys.executable, "flask_service.py"],
+            ["gunicorn", "--workers", "1", "--bind", f"0.0.0.0:{FLASK_PORT}", "flask_service:app"],
             env=os.environ.copy()
-        )
+)
         # Store the process handle so we don't relaunch later.
         st.session_state["flask_process"] = flask_process
         # Ensure that the Flask process is terminated when Streamlit stops.
